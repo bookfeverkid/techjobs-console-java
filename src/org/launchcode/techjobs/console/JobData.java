@@ -7,9 +7,8 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by LaunchCode
@@ -42,7 +41,6 @@ public class JobData {
                 values.add(aValue);
             }
         }
-
         return values;
     }
 
@@ -51,7 +49,8 @@ public class JobData {
         // load data, if not already loaded
         loadData();
 
-        return allJobs;
+        return (ArrayList<HashMap<String, String>>) allJobs.stream().sorted
+                (Comparator.comparing(n->n.toString())).collect(Collectors.toList());
     }
 
     /**
@@ -60,7 +59,6 @@ public class JobData {
      *
      * For example, searching for employer "Enterprise" will include results
      * with "Enterprise Holdings, Inc".
-     *
      * @param column   Column that should be searched.
      * @param value Value of teh field to search for
      * @return List of all jobs matching the criteria
@@ -74,13 +72,31 @@ public class JobData {
 
         for (HashMap<String, String> row : allJobs) {
 
-            String aValue = row.get(column);
+            String aValue = row.get(column).toLowerCase();
 
             if (aValue.contains(value)) {
                 jobs.add(row);
             }
         }
 
+        return jobs;
+    }
+
+    public static ArrayList<HashMap<String, String>> findByValue(String value) {
+        loadData();
+        ArrayList<HashMap<String, String>> jobs = new ArrayList<>();
+
+        for (HashMap<String,String> row: allJobs){
+            boolean addJob = false;
+            for(String val : row.values()) {
+                if (val.toLowerCase().indexOf(value) >= 0) {
+                    addJob = true;
+                }
+            }
+            if(addJob){
+                jobs.add(row);
+            }
+        }
         return jobs;
     }
 
